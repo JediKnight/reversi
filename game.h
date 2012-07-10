@@ -6,4 +6,6 @@
 #include "data.h"
 
 #define getpos(x,y) ((y * BOARD_HEIGHT) + x)
+#define reverse(c) (c * -1)
+
 #endif	/* _GAME_H_ */

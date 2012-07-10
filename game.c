@@ -50,12 +50,10 @@ int main()
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) > 0)
     {
       printf("x: ");
-      scanf("%1d", &x);
+      printf("x:%d\n", scanf("%d[1-8]", &x));
 
       printf("y: ");
-      scanf("%1d", &y);
-
-      printf("%d\n", getpos((x - 1), (y - 1)));
+      printf("y:%d\n", scanf("%1d[1-8]", &y));
 
       board[getpos((x - 1), (y - 1))] = stone;
       stone = reverse(stone);

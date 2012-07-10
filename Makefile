@@ -1,7 +1,7 @@
 CC=gcc
 
 PROGRAM=game
-OBJS=$(PROGRAM).o search.o scan.o
+OBJS=$(PROGRAM).o
 SRCS=$(OBJS:%.o=%.c)
 CFLAGS=-Wall -g
 LDFLAGS=

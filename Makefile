@@ -1,7 +1,7 @@
 CC=gcc
 
 PROGRAM=game
-OBJS=$(PROGRAM).o
+OBJS=$(PROGRAM).o hage.o
 SRCS=$(OBJS:%.o=%.c)
 CFLAGS=-Wall -g
 LDFLAGS=

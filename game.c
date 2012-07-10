@@ -4,9 +4,11 @@ void dispboard(int *b)
 {
   int x, y;
 
+  printf("  1 2 3 4 5 6 7 8\n");
+
   for(y = 0; y < BOARD_HEIGHT; y++)
     {
-      printf("|");
+      printf("%d|", y + 1);
 
       for(x = 0; x < BOARD_WIDTH; x++)
 	{
@@ -33,15 +35,33 @@ void dispboard(int *b)
 int main()
 {
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
+  int stone = BLACK;
+  /* char x[1], y[1]; */
+  int x, y;
 
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2) - 1] = WHITE;
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2)] = BLACK;
 
-  /* main loop */
-  /* while(scanempty(board) > 0) */
   dispboard(board);
+
+  /* main loop */
+  while((scanempty(board, (sizeof(board) / sizeof(board[0])))) > 0)
+    {
+      printf("x: ");
+      scanf("%1d", &x);
+
+      printf("y: ");
+      scanf("%1d", &y);
+
+      printf("%d\n", getpos((x - 1), (y - 1)));
+
+      board[getpos((x - 1), (y - 1))] = stone;
+      stone = reverse(stone);
+
+      dispboard(board);
+    }
 
   return 0;
 }

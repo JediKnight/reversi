@@ -6,5 +6,6 @@
 
 #include "data.h"
 #include "hage.h"
+#include "search.h"
 
 #endif	/* _GAME_H_ */

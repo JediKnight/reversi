@@ -60,7 +60,8 @@ int main()
       bufclear();
       if(y < 1 || y > 8) goto inputpos;
 
-      if(board[getpos((x - 1), (y - 1))] == EMPTY) 
+      if(board[getpos((x - 1), (y - 1))] == EMPTY &&
+	 scanmycolor(board, stone, (x -1), (y -1)) != 0)
 	board[getpos((x - 1), (y - 1))] = stone;
 
       stone = reverse(stone);

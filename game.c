@@ -74,9 +74,16 @@ int main()
 
       if(board[getpos((x - 1), (y - 1))] == EMPTY &&
 	 flip(board, stone, (x -1), (y -1)) != 0)
-	board[getpos((x - 1), (y - 1))] = stone;
+	{
+	  board[getpos((x - 1), (y - 1))] = stone;
+	}
+
       else
-	goto inputpos;
+	{
+	  printf("置けねーから\n");
+	  sleep(1);
+	  goto inputpos;
+	}
 
       stone = reverse(stone);
     }

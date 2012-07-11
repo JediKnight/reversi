@@ -1,10 +1,22 @@
 #include "game.h"
 
-void dispboard(int *b)
+void dispboard(int *b, int s)
 {
   int x, y;
 
   printf("\033[2J");
+
+  switch(s)
+    {
+    case BLACK:
+      printf("stone: BLACK(b)\n");
+      break;
+
+    case WHITE:
+      printf("stone: WHITE(w)\n");
+      break;
+    }
+
   printf("  1 2 3 4 5 6 7 8\n");
 
   for(y = 0; y < BOARD_HEIGHT; y++)
@@ -48,7 +60,7 @@ int main()
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) > 0)
     {
     inputpos:
-      dispboard(board);
+      dispboard(board, stone);
 
       printf("x: ");
       x = getchar() - 48;
@@ -63,6 +75,8 @@ int main()
       if(board[getpos((x - 1), (y - 1))] == EMPTY &&
 	 scanmycolor(board, stone, (x -1), (y -1)) != 0)
 	board[getpos((x - 1), (y - 1))] = stone;
+      else
+	goto inputpos;
 
       stone = reverse(stone);
     }

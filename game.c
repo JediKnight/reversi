@@ -63,6 +63,7 @@ int main()
       dispboard(board, stone);
 
       printf("x: ");
+      /* アスキーコードで返ってくるから - 48 */
       x = getchar() - 48;
       bufclear();
       if(x < 1 || x > 8) goto inputpos;
@@ -73,7 +74,7 @@ int main()
       if(y < 1 || y > 8) goto inputpos;
 
       if(board[getpos((x - 1), (y - 1))] == EMPTY &&
-	 scanmycolor(board, stone, (x -1), (y -1)) != 0)
+	 flip(board, stone, (x -1), (y -1)) != 0)
 	board[getpos((x - 1), (y - 1))] = stone;
       else
 	goto inputpos;

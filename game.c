@@ -5,8 +5,6 @@ void dispboard(int *b)
   int x, y;
 
   printf("\033[2J");
-  /* printf("\x1b[2j"); */
-
   printf("  1 2 3 4 5 6 7 8\n");
 
   for(y = 0; y < BOARD_HEIGHT; y++)
@@ -46,27 +44,25 @@ int main()
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2) - 1] = WHITE;
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2)] = BLACK;
 
-  dispboard(board);
-
   /* main loop */
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) > 0)
     {
     inputpos:
+      dispboard(board);
+
       printf("x: ");
       x = getchar() - 48;
+      bufclear();
       if(x < 1 || x > 8) goto inputpos;
-
-      while(getchar() != '\n');
 
       printf("y: ");
       y = getchar() - 48;
+      bufclear();
       if(y < 1 || y > 8) goto inputpos;
 
-      while(getchar() != '\n');
+      if(board[getpos((x - 1), (y - 1))] == EMPTY) 
+	board[getpos((x - 1), (y - 1))] = stone;
 
-      board[getpos((x - 1), (y - 1))] = stone;
-
-      dispboard(board);
       stone = reverse(stone);
     }
 

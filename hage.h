@@ -5,6 +5,7 @@
 
 #define getpos(x,y) ((y * BOARD_HEIGHT) + x)
 #define reverse(c) (c * -1)
+#define bufclear() while(getchar() != '\n')
 
 int scanempty(int *b, int size);
 

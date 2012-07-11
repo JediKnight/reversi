@@ -13,10 +13,6 @@
 #define W_STONE 'w'
 #define E_SPACE ' '
 
-<<<<<<< HEAD
-=======
-
->>>>>>> e780adad7de45a83e38cba23c7f67c13e4c1bc08
 #define BOARD_HEIGHT 8
 #define BOARD_WIDTH 8
 

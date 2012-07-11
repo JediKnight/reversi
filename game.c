@@ -63,13 +63,21 @@ int main()
       dispboard(board, stone);
 
       printf("x: ");
+<<<<<<< HEAD
+      x = getinputpos();
+=======
       /* アスキーコードで返ってくるから - 48 */
       x = getchar() - 48;
+>>>>>>> e780adad7de45a83e38cba23c7f67c13e4c1bc08
       bufclear();
       if(x < 1 || x > 8) goto inputpos;
 
       printf("y: ");
+<<<<<<< HEAD
+      y = getinputpos();
+=======
       y = getchar() - 48;
+>>>>>>> e780adad7de45a83e38cba23c7f67c13e4c1bc08
       bufclear();
       if(y < 1 || y > 8) goto inputpos;
 

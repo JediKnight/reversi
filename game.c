@@ -36,8 +36,8 @@ int main()
 {
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
   int stone = BLACK;
-  /* char x[1], y[1]; */
-  int x, y;
+  /* int x, y, tmp; */
+  char x[1], y[1], tmp;
 
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
@@ -49,13 +49,20 @@ int main()
   /* main loop */
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) > 0)
     {
+      /* x[0] = y[0] = '\0'; */
+
       printf("x: ");
-      printf("x:%d\n", scanf("%d[1-8]", &x));
+      /* scanf("%[1-8]", x); */
+      tmp = getchar();
+      sscanf(&tmp, "%[1-8]", x);
 
       printf("y: ");
-      printf("y:%d\n", scanf("%1d[1-8]", &y));
+      /* scanf("%[1-8]", y); */
+      tmp = getchar();
+      sscanf(&tmp, "%[1-8]", y);
 
-      board[getpos((x - 1), (y - 1))] = stone;
+      /* printf("%d %d", x, y); */
+      /* board[getpos((x - 1), (y - 1))] = stone; */
       stone = reverse(stone);
 
       dispboard(board);

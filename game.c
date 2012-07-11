@@ -4,6 +4,9 @@ void dispboard(int *b)
 {
   int x, y;
 
+  printf("\033[2J");
+  /* printf("\x1b[2j"); */
+
   printf("  1 2 3 4 5 6 7 8\n");
 
   for(y = 0; y < BOARD_HEIGHT; y++)
@@ -36,8 +39,7 @@ int main()
 {
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
   int stone = BLACK;
-  /* int x, y, tmp; */
-  char x[1], y[1], tmp;
+  int x, y;
 
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
@@ -49,23 +51,23 @@ int main()
   /* main loop */
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) > 0)
     {
-      /* x[0] = y[0] = '\0'; */
-
+    inputpos:
       printf("x: ");
-      /* scanf("%[1-8]", x); */
-      tmp = getchar();
-      sscanf(&tmp, "%[1-8]", x);
+      x = getchar() - 48;
+      if(x < 1 || x > 8) goto inputpos;
+
+      while(getchar() != '\n');
 
       printf("y: ");
-      /* scanf("%[1-8]", y); */
-      tmp = getchar();
-      sscanf(&tmp, "%[1-8]", y);
+      y = getchar() - 48;
+      if(y < 1 || y > 8) goto inputpos;
 
-      /* printf("%d %d", x, y); */
-      /* board[getpos((x - 1), (y - 1))] = stone; */
-      stone = reverse(stone);
+      while(getchar() != '\n');
+
+      board[getpos((x - 1), (y - 1))] = stone;
 
       dispboard(board);
+      stone = reverse(stone);
     }
 
   return 0;

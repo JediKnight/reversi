@@ -2,24 +2,8 @@
 #define _NETWORK_H_
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <unistd.h>
-
-#include <arpa/inet.h>
-#include <netdb.h>
 #include <sys/socket.h>
-
-typedef int sock;
-
-#define BUF_LEN 1024
-
-int getsock(char *hostnm, int portn);
-int request(int soc, char *req);
-int getmsg(int soc);
-int sclose(int soc);
+#include <sys/types.h
+#include <netinet/in.h>
 
 #endif /* _NETWORK_H_ */

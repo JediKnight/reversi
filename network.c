@@ -1,105 +1,94 @@
 #include "network.h"
 
-sock getsock(char *hostnm, int portn)
+int server(int argc, char **argv)
 {
-  struct hostent *host;
-  struct sockaddr_in sockaddr;
+  int sd;
+  int acc_sd;
+  struct sockaddr_in addr;
 
-  int soc;
+  socklen_t sin_size = sizeof(struct sockaddr_in);
+  struct sockaddr_in from_addr;
 
-  /* struct hostent FAR * gethostbyname(const char FAR * name) */
-  if((host = gethostbyname(hostnm)) == NULL)
-    {
-      fprintf(stderr, "gethostbyname: %s\n", hostnm);
-      exit(EXIT_FAILURE);
-    }
+  char buf[2048];
 
-  /*
-   * ゼロクリア
-   * memset(void *s, int , size_t)
-   */
-  memset(&sockaddr, 0, sizeof(sockaddr));
+  // 受信バッファの初期化
+  memset(buf, 0, sizeof(buf));
 
-  /*
-   * sockaddr.sin_familyをセット
-   */
-  sockaddr.sin_family = PF_INET;
+  // IPv4 TCP のソケットを作成
+  if((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    perror("socket");
+    return -1;
+  }
 
-  /*
-   * sockaddr.sin_addrをセット
-   * memcpy(void *dst, const void *src, size_t) 
-   */
-  memcpy(&sockaddr.sin_addr, host->h_addr, host->h_length);
+  // 待ち受けるIPとポート番号を設定
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(22222);
+  addr.sin_addr.s_addr = INADDR_ANY;
 
-  /*
-   * sockadder.sin_portをセット
-   */
-  sockaddr.sin_port = htons(portn);
+  // バインドする
+  if(bind(sd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    perror("bind");
+    return -1;
+  }
 
-  /*
-   * socket生成
-   * socket(int domain, int type, int protocol)
-   * PF_INET IPv4
-   * SOCK_STREAM 順序性と信頼性があり、双方向の接続されたバイトストリームを提供
-   */
-  if((soc = socket(PF_INET, SOCK_STREAM, 0)) < 0)
-    {
-      fprintf(stderr, "socket");
-      close(soc);
-      exit(EXIT_FAILURE);
-    }
+  // パケット受信待ち状態とする
+  // 待ちうけキューを１０としている
+  if(listen(sd, 10) < 0) {
+    perror("listen");
+    return -1;
+  }
 
-  /*
-   * コネクションを確立する
-   * connect(int socket, const struct sockaddr *address, socklen_t address_len)
-   */
-  if(connect(soc, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0)
-    {
-      fprintf(stderr, "connect");
-      close(soc);
-      exit(EXIT_FAILURE);
-    }
+  // クライアントからコネクト要求が来るまで停止する
+  // 以降、サーバ側は acc_sd を使ってパケットの送受信を行う
+  if((acc_sd = accept(sd, (struct sockaddr *)&from_addr, &sin_size)) < 0) {
+    perror("accept");
+    return -1;
+  }
+ 
+  // パケット受信。パケットが到着するまでブロック
+  if(recv(acc_sd, buf, sizeof(buf), 0) < 0) {
+    perror("recv");
+    return -1;
+  }
 
-  return soc;
-}
+  // パケット送受信用ソケットのクローズ
+  close(acc_sd);
 
-int request(int soc, char *req)
-{
-  char msg[BUF_LEN];
+  // 接続要求待ち受け用ソケットをクローズ
+  close(sd);
 
-  /* 
-   * リクエスを生成 
-   */
-  snprintf(msg, sizeof(msg), "%s", req);
-
-  /*
-   * リクエストの送信
-   * write(int socket, const void *buf, size_t nbyte)
-   */
-  write(soc, msg, strlen(msg));
+  // 受信データの出力
+  printf("%s\n", buf);
 
   return 0;
 }
 
-int getmsg(int soc)
+int client(int argc, char **argv)
 {
-  char buf[BUF_LEN];
+  int sd;
+  struct sockaddr_in addr;
 
-  /*
-   * メッセージの受信
-   * read(int socket, void *buf, size_t nbyte)
-   */
-  while(read(soc, buf, sizeof(buf)) > 0)
-    {
-      printf("%s", buf);
-    }
+  // IPv4 TCP のソケットを作成する
+  if((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    perror("socket");
+    return -1;
+  }
 
-  return 0;
-}
+  // 送信先アドレスとポート番号を設定する
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(22222);
+  addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-int sclose(int soc)
-{
-  close(soc);
+  // サーバ接続（TCP の場合は、接続を確立する必要がある）
+  connect(sd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+
+  // パケットを TCP で送信
+  if(send(sd, "I am send process", 17, 0) < 0) {
+    perror("send");
+    return -1;
+  }
+
+  close(sd);
 
   return 0;
 }

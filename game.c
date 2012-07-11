@@ -51,6 +51,10 @@ int main()
   int stone = BLACK;
   int x, y;
 
+#ifdef _NETWORK_
+  int soc;
+#endif
+
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2) - 1] = WHITE;
@@ -85,7 +89,11 @@ int main()
 	  goto inputpos;
 	}
 
+#ifndef _NETWORK_
       stone = reverse(stone);
+#else
+      sleep(1);
+#endif
     }
 
   return 0;

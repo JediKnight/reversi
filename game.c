@@ -50,6 +50,7 @@ int main(int argc, char **argv)
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
   int stone = BLACK;
   int x = 0, y = 0;
+  int turn = BLACK;
   char ipaddr[15 + 1] = { 0 };
 
   if(argc < 2)
@@ -87,37 +88,45 @@ int main(int argc, char **argv)
     inputpos:
       dispboard(board, stone);
 
-      printf("x: ");
-      x = getinputpos();
-      bufclear();
-      if(x < 1 || x > 8) goto inputpos;
-
-      printf("y: ");
-      y = getinputpos();
-      bufclear();
-      if(y < 1 || y > 8) goto inputpos;
-
-      if(board[getpos((x - 1), (y - 1))] == EMPTY &&
-	 flip(board, stone, (x -1), (y -1)) != 0)
+      if(turn == stone)
 	{
-	  board[getpos((x - 1), (y - 1))] = stone;
+	  printf("x: ");
+	  x = getinputpos();
+	  bufclear();
+	  if(x < 1 || x > 8) goto inputpos;
+	  
+	  printf("y: ");
+	  y = getinputpos();
+	  bufclear();
+	  if(y < 1 || y > 8) goto inputpos;
+	  
+	  if(board[getpos((x - 1), (y - 1))] == EMPTY &&
+	     flip(board, stone, (x -1), (y -1)) != 0)
+	    {
+	      board[getpos((x - 1), (y - 1))] = stone;
+#ifdef _NETWORK_
+	      client(x, y, ipaddr);
+#endif
+	    }
+
+	  else
+	    {
+	      printf("置けねーから\n");
+	      sleep(1);
+	      goto inputpos;
+	    }
 	}
 
       else
-	{
-	  printf("置けねーから\n");
-	  sleep(1);
-	  goto inputpos;
-	}
-
+	{	
 #ifndef _NETWORK_
-      stone = reverse(stone);
+	  stone = reverse(stone);
 #else
-      client(x, y, ipaddr);
-      server(&x, &y);
-      flip(board, reverse(stone), (x - 1), (y - 1));
-      board[getpos((x - 1), (y - 1))] = reverse(stone);
+	  server(&x, &y);
+	  flip(board, reverse(stone), (x - 1), (y - 1));
+	  board[getpos((x - 1), (y - 1))] = reverse(stone);
 #endif
+	}
     }
 
   return 0;

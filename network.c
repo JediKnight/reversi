@@ -1,94 +1,82 @@
 #include "network.h"
 
-int server(int argc, char **argv)
+int server(int *x, int *y)
 {
-  int sd;
-  int acc_sd;
-  struct sockaddr_in addr;
-
+  int soc;
+  int accsoc;
   socklen_t sin_size = sizeof(struct sockaddr_in);
+  struct sockaddr_in addr;
   struct sockaddr_in from_addr;
-
   char buf[2048];
+  char *tmp;
 
-  // 受信バッファの初期化
   memset(buf, 0, sizeof(buf));
 
-  // IPv4 TCP のソケットを作成
-  if((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    perror("socket");
+  if((soc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    fprintf(stderr, "socket");
     return -1;
   }
 
-  // 待ち受けるIPとポート番号を設定
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(22222);
+  addr.sin_port = htons(PORT);
   addr.sin_addr.s_addr = INADDR_ANY;
 
-  // バインドする
-  if(bind(sd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-    perror("bind");
+  if(bind(soc, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    fprintf(stderr, "bind");
     return -1;
   }
 
-  // パケット受信待ち状態とする
-  // 待ちうけキューを１０としている
-  if(listen(sd, 10) < 0) {
-    perror("listen");
+  if(listen(soc, 10) < 0) {
+    fprintf(stderr, "listen");
     return -1;
   }
 
-  // クライアントからコネクト要求が来るまで停止する
-  // 以降、サーバ側は acc_sd を使ってパケットの送受信を行う
-  if((acc_sd = accept(sd, (struct sockaddr *)&from_addr, &sin_size)) < 0) {
-    perror("accept");
+  if((accsoc = accept(soc, (struct sockaddr *)&from_addr, &sin_size)) < 0) {
+    fprintf(stderr, "accept");
     return -1;
   }
  
-  // パケット受信。パケットが到着するまでブロック
-  if(recv(acc_sd, buf, sizeof(buf), 0) < 0) {
-    perror("recv");
+  if(recv(accsoc, buf, sizeof(buf), 0) < 0) {
+    fprintf(stderr, "recv");
     return -1;
   }
 
-  // パケット送受信用ソケットのクローズ
-  close(acc_sd);
+  tmp = strtok(buf, ":");
+  *x = atoi(tmp);
+  tmp = strtok(NULL, ":");
+  *y = atoi(tmp);
 
-  // 接続要求待ち受け用ソケットをクローズ
-  close(sd);
-
-  // 受信データの出力
-  printf("%s\n", buf);
+  close(accsoc);
+  close(soc);
 
   return 0;
 }
 
-int client(int argc, char **argv)
+int client(int x, int y, char *ipaddr)
 {
-  int sd;
+  int soc;
   struct sockaddr_in addr;
+  char msg[3 + 1] = { 0 };
 
-  // IPv4 TCP のソケットを作成する
-  if((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    perror("socket");
+  sprintf(msg, "%d:%d", x, y);
+
+  if((soc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    fprintf(stderr, "socket");
     return -1;
   }
 
-  // 送信先アドレスとポート番号を設定する
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(22222);
-  addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  addr.sin_port = htons(PORT);
+  addr.sin_addr.s_addr = inet_addr(ipaddr);
 
-  // サーバ接続（TCP の場合は、接続を確立する必要がある）
-  connect(sd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+  connect(soc, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 
-  // パケットを TCP で送信
-  if(send(sd, "I am send process", 17, 0) < 0) {
-    perror("send");
+  if(send(soc, msg, strlen(msg), 0) < 0) {
+    fprintf(stderr, "send");
     return -1;
   }
 
-  close(sd);
+  close(soc);
 
   return 0;
 }

@@ -49,19 +49,25 @@ int main()
 {
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
   int stone = BLACK;
-  int x, y;
-
-#ifdef _NETWORK_
-  int soc;
-#endif
+  int x = 0, y = 0;
+  char ipaddr[] = "127.0.0.1";
 
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2) - 1] = WHITE;
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2)] = BLACK;
 
+  if(client(x, y, ipaddr) != 0)
+    {
+      x = y = 1;
+      server(&x, &y);
+      stone = reverse(stone);
+    }
+
+  printf("%d %d", x, y);
+
   /* main loop */
-  while((scanempty(board, (sizeof(board) / sizeof(board[0])))) > 0)
+  while((scanempty(board, (sizeof(board) / sizeof(board[0])))) >= 0)
     {
     inputpos:
       dispboard(board, stone);
@@ -92,7 +98,10 @@ int main()
 #ifndef _NETWORK_
       stone = reverse(stone);
 #else
-      sleep(1);
+      client(x, y, ipaddr);
+      server(&x, &y);
+      flip(board, reverse(stone), (x - 1), (y - 1));
+      board[getpos((x - 1), (y - 1))] = reverse(stone);
 #endif
     }
 

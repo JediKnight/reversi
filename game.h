@@ -8,12 +8,11 @@
 #include "data.h"
 #include "hage.h"
 #include "search.h"
-#include "network.h"
 
 #ifdef _NETWORK_
 
-#define PORT 12345
+#include "network.h"
 
-#endif
+#endif	/* _NETWORK_ */
 
 #endif	/* _GAME_H_ */

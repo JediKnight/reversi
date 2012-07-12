@@ -3,7 +3,7 @@ CC=gcc
 PROGRAM=game
 OBJS=$(PROGRAM).o hage.o search.o network.o
 SRCS=$(OBJS:%.o=%.c)
-CFLAGS=-Wall -g -D_NETWORK_
+CFLAGS=-Wall -g -D_NETWORK_ -D_DEBUG_
 LDFLAGS=
 
 $(PROGRAM): $(OBJS)

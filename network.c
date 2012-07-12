@@ -8,7 +8,6 @@ int server(int *x, int *y)
   struct sockaddr_in addr;
   struct sockaddr_in from_addr;
   char buf[2048];
-  char *tmp;
 
   memset(buf, 0, sizeof(buf));
 
@@ -41,10 +40,8 @@ int server(int *x, int *y)
     return -1;
   }
 
-  tmp = strtok(buf, ":");
-  *x = atoi(tmp);
-  tmp = strtok(NULL, ":");
-  *y = atoi(tmp);
+  x = (int *)strtok(buf, ":");
+  y = (int *)strtok(NULL, ":");
 
   close(accsoc);
   close(soc);
@@ -56,8 +53,9 @@ int client(int x, int y, char *ipaddr)
 {
   int soc;
   struct sockaddr_in addr;
-  char msg[3 + 1] = { 0 };
+  char msg[3 + 1];
 
+  memset(msg, 0, sizeof(msg) / sizeof(msg[0]));
   sprintf(msg, "%d:%d", x, y);
 
   if((soc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -69,9 +67,13 @@ int client(int x, int y, char *ipaddr)
   addr.sin_port = htons(PORT);
   addr.sin_addr.s_addr = inet_addr(ipaddr);
 
-  connect(soc, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+  if(connect(soc, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0)
+    {
+      fprintf(stderr, "connect");
+      return -1;
+    }
 
-  if(send(soc, msg, strlen(msg), 0) < 0) {
+  if(send(soc, msg, sizeof(msg) / sizeof(msg[0]), 0) < 0) {
     fprintf(stderr, "send");
     return -1;
   }

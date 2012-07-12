@@ -52,7 +52,17 @@ int main(int argc, char **argv)
   int x = 0, y = 0;
   char ipaddr[15 + 1] = { 0 };
 
+  if(argc < 2)
+    {
+      fprintf(stderr, "%s [Server IP]\n", argv[0]);
+      exit(EXIT_FAILURE);
+    }
+
+#ifndef _DEBUG_
   strncpy(ipaddr, argv[1], sizeof(argv[1]));
+#else
+  strncpy(ipaddr, "127.0.0.1", sizeof("127.0.0.1"));
+#endif
 
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
@@ -61,15 +71,15 @@ int main(int argc, char **argv)
 
 #ifdef _NETWORK_
   puts("clisrv start");
-  if(client(x, y, ipaddr) != 0)
+  if(client(x, y, ipaddr) == -1)
     {
-      puts("aite ga inai kara srv to shite matsu");
+      puts("aite ga inai kara srv to shite kido");
       server(&x, &y);
       stone = reverse(stone);
     }
+#endif
 
   printf("%d %d", x, y);
-#endif
 
   /* main loop */
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) >= 0)

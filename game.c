@@ -45,26 +45,31 @@ void dispboard(int *b, int s)
     }
 }
 
-int main()
+int main(int argc, char **argv)
 {
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
   int stone = BLACK;
   int x = 0, y = 0;
-  char ipaddr[] = "127.0.0.1";
+  char ipaddr[15 + 1] = { 0 };
+
+  strncpy(ipaddr, argv[1], sizeof(argv[1]));
 
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
   board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2) - 1] = WHITE;
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2)] = BLACK;
 
+#ifdef _NETWORK_
+  puts("clisrv start");
   if(client(x, y, ipaddr) != 0)
     {
-      x = y = 1;
+      puts("aite ga inai kara srv to shite matsu");
       server(&x, &y);
       stone = reverse(stone);
     }
 
   printf("%d %d", x, y);
+#endif
 
   /* main loop */
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) >= 0)

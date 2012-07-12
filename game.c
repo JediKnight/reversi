@@ -53,6 +53,11 @@ int main(int argc, char **argv)
   int turn = BLACK;
   char ipaddr[15 + 1] = { 0 };
 
+#ifdef _NETWORK_
+  int clntsoc = getsoc();
+  int servsoc = getsoc();
+#endif
+
   if(argc < 2)
     {
       fprintf(stderr, "%s [Server IP]\n", argv[0]);
@@ -71,11 +76,10 @@ int main(int argc, char **argv)
   board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2)] = BLACK;
 
 #ifdef _NETWORK_
-  puts("clisrv start");
-  if(client(x, y, ipaddr) == -1)
+  if(client(clntsoc, x, y, ipaddr) == -1)
     {
-      puts("aite ga inai kara srv to shite kido");
-      server(&x, &y);
+      puts("wait...");
+      server(servsoc, &x, &y);
       stone = reverse(stone);
     }
 #endif
@@ -104,8 +108,9 @@ int main(int argc, char **argv)
 	     flip(board, stone, (x -1), (y -1)) != 0)
 	    {
 	      board[getpos((x - 1), (y - 1))] = stone;
+
 #ifdef _NETWORK_
-	      client(x, y, ipaddr);
+	      client(clntsoc, x, y, ipaddr);
 #endif
 	    }
 
@@ -118,16 +123,23 @@ int main(int argc, char **argv)
 	}
 
       else
-	{	
-#ifndef _NETWORK_
-	  stone = reverse(stone);
-#else
-	  server(&x, &y);
+	{
+#ifdef _NETWORK_
+	  server(servsoc, &x, &y);
+	  fprintf(stdout, "%d:%d", x, y);
+	  sleep(10);
 	  flip(board, reverse(stone), (x - 1), (y - 1));
 	  board[getpos((x - 1), (y - 1))] = reverse(stone);
+#else
+	  stone = reverse(stone);
 #endif
 	}
+
+      turn = reverse(stone);
     }
+
+  closesoc(clntsoc);
+  closesoc(servsoc);
 
   return 0;
 }

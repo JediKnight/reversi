@@ -12,7 +12,9 @@
 
 #define PORT 19860
 
-int server(int *x, int *y);
-int client(int x, int y, char *ipaddr);
+int getsoc();
+int closesoc(int soc);
+int server(int soc, int *x, int *y);
+int client(int soc, int x, int y, char *ipaddr);
 
 #endif /* _NETWORK_H_ */

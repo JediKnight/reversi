@@ -4,7 +4,7 @@ int getsocket()
 {
   int soc;
 
-  if((soc = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+  if((soc = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
       perror("socket");
       return -1;
@@ -16,13 +16,11 @@ int getsocket()
 int closesocket(int soc)
 {
   close(soc);
-
   return 0;
 }
 
-int recvdata(int soc, char *data)
+int recvdata(int soc, int accept_soc, char *data)
 {
-  int accept_soc;
   socklen_t sin_size = sizeof(struct sockaddr_in);
   struct sockaddr_in addr;
   struct sockaddr_in from_addr;
@@ -31,30 +29,33 @@ int recvdata(int soc, char *data)
   addr.sin_port = htons(PORT);
   addr.sin_addr.s_addr = INADDR_ANY;
 
+  if(accept_soc < 0) goto listen;
+
   if(bind(soc, (struct sockaddr *)&addr, sizeof(addr)) < 0) 
-    {
-      perror("bind");
-      return -1;
+    { 
+      perror("bind"); 
+      return -1; 
     }
 
+ listen:
   if(listen(soc, 10) < 0) 
-    {
-      perror("listen");
-      return -1;
+    { 
+      perror("listen"); 
+      return -1; 
     }
 
   if((accept_soc = accept(soc, (struct sockaddr *)&from_addr, &sin_size)) < 0) 
-    {
-      perror("accept");
-      return -1;
+    { 
+      perror("accept"); 
+      return -1; 
     }
 
   memset(data, 0, sizeof(data));
- 
+
   if(recv(accept_soc, data, sizeof(data), 0) < 0) 
-    {
-      perror("recv");
-      return -1;
+    { 
+      perror("recv"); 
+      return -1; 
     }
 
   return accept_soc;

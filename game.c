@@ -1,9 +1,5 @@
 #include "game.h"
 
-int client_soc;
-int server_soc;
-char ipaddr[15 + 1] = { EMPTY };
-
 int networkinit(int cnt, char **val, int size, char *addr)
 {
   if(cnt < 2)
@@ -30,14 +26,15 @@ int gameinit(int *b)
 int selectcolor(int *stn)
 {
   int x, y;
+  char data[2 + 1] = { EMPTY };
 
   x = y = 0;
 
 #ifdef _NETWORK_
-  if(client(client_soc, x, y, ipaddr) == -1)
+  if(senddata(client_soc, x, y, ipaddr) == -1)
     {
       puts("wait...");
-      server(server_soc, &x, &y);
+      recvdata(server_soc, data);
       *stn = reverse(*stn);
     }
 #endif	/* _NETWORK_ */
@@ -68,7 +65,7 @@ int mytrun(int *b, int stn)
       b[getpos((x - 1), (y - 1))] = stn;
       
 #ifdef _NETWORK_
-      client(client_soc, x, y, ipaddr);
+      senddata(client_soc, x, y, ipaddr);
 #endif	/* _NETWORK_ */
     }
 
@@ -85,11 +82,12 @@ int mytrun(int *b, int stn)
 int enemytrun(int *b, int stn)
 {
   int x, y;
+  char data[2 + 1] = { EMPTY };
 
   x = y = 0;
 
 #ifdef _NETWORK_
-  server(server_soc, &x, &y);
+  recvdata(server_soc, data);
   fprintf(stdout, "%d:%d", x, y);
   sleep(10);
   flip(b, reverse(stn), (x - 1), (y - 1));
@@ -106,13 +104,8 @@ int main(int argc, char **argv)
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
   int stone = BLACK;
   int turn = stone;
-  int x = 0, y = 0;
 
 #ifdef _NETWORK_
-  int clntsoc = getsoc();
-  int servsoc = getsoc();
-  char ipaddr[15 + 1] = { 0 };
-
   networkinit(argc, argv, sizeof(argv[1]), ipaddr);
 #endif	/* _NETWORK_ */
 
@@ -138,8 +131,8 @@ int main(int argc, char **argv)
       turn = reverse(stone);
     }
 
-  closesoc(clntsoc);
-  closesoc(servsoc);
+  closesocket(client_soc);
+  closesocket(server_soc);
 
   return 0;
 }

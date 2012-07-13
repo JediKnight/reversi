@@ -1,6 +1,6 @@
 #include "network.h"
 
-int getsoc()
+int getsocket()
 {
   int soc;
 
@@ -13,16 +13,16 @@ int getsoc()
   return soc;
 }
 
-int closesoc(int soc)
+int closesocket(int soc)
 {
   close(soc);
 
   return 0;
 }
 
-int initnetwork()
+int recvdata(int soc, char *data)
 {
-  int accsoc;
+  int accept_soc;
   socklen_t sin_size = sizeof(struct sockaddr_in);
   struct sockaddr_in addr;
   struct sockaddr_in from_addr;
@@ -43,34 +43,24 @@ int initnetwork()
       return -1;
     }
 
-  if((accsoc = accept(soc, (struct sockaddr *)&from_addr, &sin_size)) < 0) 
+  if((accept_soc = accept(soc, (struct sockaddr *)&from_addr, &sin_size)) < 0) 
     {
       perror("accept");
       return -1;
     }
 
-  return 0;
-}
-
-int getdata(int soc, int *x, int *y)
-{
-  char buf[2 + 1];
-
-  memset(buf, 0, sizeof(buf));
+  memset(data, 0, sizeof(data));
  
-  if(recv(accsoc, buf, sizeof(buf), 0) < 0) 
+  if(recv(accept_soc, data, sizeof(data), 0) < 0) 
     {
       perror("recv");
       return -1;
     }
 
-  *x = buf[0];
-  *y = buf[1];
-
-  return 0;
+  return accept_soc;
 }
 
-int client(int soc, int x, int y, char *ipaddr)
+int senddata(int soc, int x, int y, char *ipaddr)
 {
   struct sockaddr_in addr;
   char msg[3 + 1];

@@ -20,15 +20,12 @@ int closesoc(int soc)
   return 0;
 }
 
-int server(int soc, int *x, int *y)
+int initnetwork()
 {
   int accsoc;
   socklen_t sin_size = sizeof(struct sockaddr_in);
   struct sockaddr_in addr;
   struct sockaddr_in from_addr;
-  char buf[2 + 1];
-
-  memset(buf, 0, sizeof(buf));
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons(PORT);
@@ -51,6 +48,15 @@ int server(int soc, int *x, int *y)
       perror("accept");
       return -1;
     }
+
+  return 0;
+}
+
+int getdata(int soc, int *x, int *y)
+{
+  char buf[2 + 1];
+
+  memset(buf, 0, sizeof(buf));
  
   if(recv(accsoc, buf, sizeof(buf), 0) < 0) 
     {
@@ -60,12 +66,6 @@ int server(int soc, int *x, int *y)
 
   *x = buf[0];
   *y = buf[1];
-
-  /* x = (int *)strtok(buf, ":"); */
-  /* y = (int *)strtok(NULL, ":"); */
-
-  /* close(accsoc); */
-  /* close(soc); */
 
   return 0;
 }

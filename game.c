@@ -1,138 +1,138 @@
 #include "game.h"
 
-void dispboard(int *b, int s)
+int client_soc;
+int server_soc;
+char ipaddr[15 + 1] = { EMPTY };
+
+int networkinit(int cnt, char **val, int size, char *addr)
+{
+  if(cnt < 2)
+    {
+      fprintf(stderr, "%s [Server IP]\n", val[0]);
+      exit(EXIT_FAILURE);
+    }
+
+  strncpy(addr, val[1], size);
+
+  return 0;
+}
+
+int gameinit(int *b)
+{
+  b[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
+  b[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
+  b[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2) - 1] = WHITE;
+  b[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2)] = BLACK;
+
+  return 0;
+}
+
+int selectcolor(int *stn)
 {
   int x, y;
 
-  printf("\033[2J");
+  x = y = 0;
 
-  switch(s)
+#ifdef _NETWORK_
+  if(client(client_soc, x, y, ipaddr) == -1)
     {
-    case BLACK:
-      printf("stone: BLACK(b)\n");
-      break;
+      puts("wait...");
+      server(server_soc, &x, &y);
+      *stn = reverse(*stn);
+    }
+#endif	/* _NETWORK_ */
 
-    case WHITE:
-      printf("stone: WHITE(w)\n");
-      break;
+  return 0;
+}
+
+
+int mytrun(int *b, int stn)
+{
+  int x, y;
+
+  x = y = 0;
+
+  printf("x: ");
+  x = getinputpos();
+  bufclear();
+  if(x < 1 || x > 8) return -1;
+  
+  printf("y: ");
+  y = getinputpos();
+  bufclear();
+  if(y < 1 || y > 8) return -1;
+  
+  if(b[getpos((x - 1), (y - 1))] == EMPTY &&
+     flip(b, stn, (x -1), (y -1)) != 0)
+    {
+      b[getpos((x - 1), (y - 1))] = stn;
+      
+#ifdef _NETWORK_
+      client(client_soc, x, y, ipaddr);
+#endif	/* _NETWORK_ */
     }
 
-  printf("  1 2 3 4 5 6 7 8\n");
-
-  for(y = 0; y < BOARD_HEIGHT; y++)
+  else
     {
-      printf("%d|", y + 1);
-
-      for(x = 0; x < BOARD_WIDTH; x++)
-	{
-	  switch(b[getpos(x, y)])
-	    {
-	    case BLACK:
-	      printf("%c|", B_STONE);
-	      break;
-
-	    case WHITE:
-	      printf("%c|", W_STONE);
-	      break;
-
-	    case EMPTY:
-	      printf("%c|", E_SPACE);
-	      break;
-	    }
-	}
-
-      printf("\n");
+      printf("置けねーから\n");
+      sleep(1);
+      return -1;
     }
+
+  return 0;
+}
+
+int enemytrun(int *b, int stn)
+{
+  int x, y;
+
+  x = y = 0;
+
+#ifdef _NETWORK_
+  server(server_soc, &x, &y);
+  fprintf(stdout, "%d:%d", x, y);
+  sleep(10);
+  flip(b, reverse(stn), (x - 1), (y - 1));
+  b[getpos((x - 1), (y - 1))] = reverse(stn);
+#else
+  stone = reverse(stone);
+#endif	/* _NETWORK_ */
+  
+  return 0;
 }
 
 int main(int argc, char **argv)
 {
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
   int stone = BLACK;
+  int turn = stone;
   int x = 0, y = 0;
-  int turn = BLACK;
-  char ipaddr[15 + 1] = { 0 };
 
 #ifdef _NETWORK_
   int clntsoc = getsoc();
   int servsoc = getsoc();
-#endif
+  char ipaddr[15 + 1] = { 0 };
 
-  if(argc < 2)
-    {
-      fprintf(stderr, "%s [Server IP]\n", argv[0]);
-      exit(EXIT_FAILURE);
-    }
+  networkinit(argc, argv, sizeof(argv[1]), ipaddr);
+#endif	/* _NETWORK_ */
 
-#ifndef _DEBUG_
-  strncpy(ipaddr, argv[1], sizeof(argv[1]));
-#else
-  strncpy(ipaddr, "127.0.0.1", sizeof("127.0.0.1"));
-#endif
+  gameinit(board);
+  selectcolor(&stone);
 
-  board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
-  board[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2)] = WHITE;
-  board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2) - 1] = WHITE;
-  board[(BOARD_HEIGHT * 4) + (BOARD_WIDTH / 2)] = BLACK;
-
-#ifdef _NETWORK_
-  if(client(clntsoc, x, y, ipaddr) == -1)
-    {
-      puts("wait...");
-      server(servsoc, &x, &y);
-      stone = reverse(stone);
-    }
-#endif
-
-  printf("%d %d", x, y);
-
-  /* main loop */
+  /* game start */
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) >= 0)
     {
-    inputpos:
+    start:
       dispboard(board, stone);
 
       if(turn == stone)
 	{
-	  printf("x: ");
-	  x = getinputpos();
-	  bufclear();
-	  if(x < 1 || x > 8) goto inputpos;
-	  
-	  printf("y: ");
-	  y = getinputpos();
-	  bufclear();
-	  if(y < 1 || y > 8) goto inputpos;
-	  
-	  if(board[getpos((x - 1), (y - 1))] == EMPTY &&
-	     flip(board, stone, (x -1), (y -1)) != 0)
-	    {
-	      board[getpos((x - 1), (y - 1))] = stone;
-
-#ifdef _NETWORK_
-	      client(clntsoc, x, y, ipaddr);
-#endif
-	    }
-
-	  else
-	    {
-	      printf("置けねーから\n");
-	      sleep(1);
-	      goto inputpos;
-	    }
+  if(mytrun(board, stone) == -1) goto start;
 	}
 
       else
 	{
-#ifdef _NETWORK_
-	  server(servsoc, &x, &y);
-	  fprintf(stdout, "%d:%d", x, y);
-	  sleep(10);
-	  flip(board, reverse(stone), (x - 1), (y - 1));
-	  board[getpos((x - 1), (y - 1))] = reverse(stone);
-#else
-	  stone = reverse(stone);
-#endif
+  enemytrun(board, stone);
 	}
 
       turn = reverse(stone);

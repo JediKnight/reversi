@@ -1,5 +1,13 @@
 #include "search.h"
 
+int scanempty(int *b, int size)
+{
+  int i;
+
+  for(i = 1; i <= size; i++) if(b[i] == EMPTY) return i;
+  return 0;
+}
+
 int flip(int *b, int s, int x, int y)
 {
   int xx, yy, xxx, yyy, flg = 0;

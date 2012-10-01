@@ -1,18 +1,5 @@
 #include "game.h"
 
-int networkinit(int cnt, char **val, int size, char *addr)
-{
-  if(cnt < 2)
-    {
-      fprintf(stderr, "%s [Server IP]\n", val[0]);
-      exit(EXIT_FAILURE);
-    }
-
-  strncpy(addr, val[1], size);
-
-  return 0;
-}
-
 int gameinit(int *b)
 {
   b[(BOARD_HEIGHT * 3) + (BOARD_WIDTH / 2) - 1] = BLACK;
@@ -23,27 +10,16 @@ int gameinit(int *b)
   return 0;
 }
 
-int selectcolor(int server_soc, int client_soc, char *ipaddr,  int *stn)
+int selectcolor(int *stn)
 {
-  int x, y;
-  char data[2 + 1] = { EMPTY };
-
-  x = y = 0;
-
-#ifdef _NETWORK_
-  if(senddata(client_soc, x, y, ipaddr) == -1)
-    {
-      puts("wait...");
-      recvdata(server_soc, data);
-      *stn = reverse(*stn);
-    }
-#endif	/* _NETWORK_ */
+  stn = getinputpos();
+  bufclear();
 
   return 0;
 }
 
 
-int mytrun(int soc, char *ipaddr, int *b, int stn)
+int mytrun(int *b, int stn)
 {
   int x, y;
 
@@ -63,10 +39,6 @@ int mytrun(int soc, char *ipaddr, int *b, int stn)
      flip(b, stn, (x -1), (y -1)) != 0)
     {
       b[getpos((x - 1), (y - 1))] = stn;
-      
-#ifdef _NETWORK_
-      senddata(soc, x, y, ipaddr);
-#endif	/* _NETWORK_ */
     }
 
   else
@@ -79,23 +51,8 @@ int mytrun(int soc, char *ipaddr, int *b, int stn)
   return 0;
 }
 
-int enemytrun(int ssoc, int *b, int stn)
+int enemytrun(int *b, int stn)
 {
-  int x, y;
-  char data[2 + 1] = { EMPTY };
-
-  x = y = 0;
-
-#ifdef _NETWORK_
-  recvdata(ssoc, data);
-  fprintf(stdout, "%d:%d", x, y);
-  sleep(10);
-  flip(b, reverse(stn), (x - 1), (y - 1));
-  b[getpos((x - 1), (y - 1))] = reverse(stn);
-#else
-  stone = reverse(stone);
-#endif	/* _NETWORK_ */
-  
   return 0;
 }
 
@@ -104,18 +61,9 @@ int main(int argc, char **argv)
   int board[BOARD_HEIGHT * BOARD_WIDTH] = { EMPTY };
   int stone = BLACK;
   int turn = stone;
-  char ipaddr[15 + 1] = { 0 };
-
-#ifdef _NETWORK_
-  int server_soc, client_soc, accept_soc;
-
-  server_soc = getsocket();
-  client_soc = getsocket();
-  networkinit(argc, argv, sizeof(argv[1]), ipaddr);
-#endif	/* _NETWORK_ */
 
   gameinit(board);
-  selectcolor(server_soc, client_soc, ipaddr,  &stone);
+  selectcolor(&stone);
 
   /* game start */
   while((scanempty(board, (sizeof(board) / sizeof(board[0])))) >= 0)
@@ -125,19 +73,19 @@ int main(int argc, char **argv)
 
       if(turn == stone)
 	{
-	  if(mytrun(client_soc, ipaddr, board, stone) == -1) goto start;
+	  if(mytrun(board, stone) == -1) goto start;
 	}
 
       else
 	{
-	  enemytrun(server_soc,  board, stone);
+	  // ai
+	  enemytrun(board, stone);
 	}
       
       turn = reverse(stone);
+      printf("stone:%d, turn:%d\n", stone, turn);
+      sleep(3);
     }
   
-  closesocket(client_soc);
-  closesocket(server_soc);
-
   return 0;
 }

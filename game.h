@@ -9,10 +9,4 @@
 #include "hage.h"
 #include "search.h"
 
-#ifdef _NETWORK_
-
-#include "network.h"
-
-#endif	/* _NETWORK_ */
-
 #endif	/* _GAME_H_ */

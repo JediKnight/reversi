@@ -1,7 +1,5 @@
-#ifndef _HAGE_H_
-#define _HAGE_H_
-
-#include <stdio.h>
+#ifndef _GAME_H_
+#define _GAME_H_
 
 #include "data.h"
 
@@ -10,6 +8,4 @@
 #define getinputpos() (getchar() - 48);
 #define bufclear() while(getchar() != '\n')
 
-void dispboard(int *b, int s);
-
-#endif	/* _HAGE_H_ */
+#endif	/* _GAME_H_ */

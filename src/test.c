@@ -23,6 +23,13 @@ int btod(int decimal, int val)
   return ret;
 }
 
+int dtob(int decimal, int val)
+{
+  int i, ret = 0, digit = numberOfDigit(val);
+  for(i = digit - 1; i >=0; ret += (val % decimal) * (int)pow((double)10, (double)1));
+  return ret;
+}
+
 int main(int argc, char **argv)
 {
   int org, dec;
@@ -32,7 +39,10 @@ int main(int argc, char **argv)
   dec = atoi(argv[1]);
   org = atoi(argv[2]);
 
-  printf("%d\n", btod(dec, org));
-  //  printf("%f\n", 3 * pow(3, 0));
+  if(dec == 10)
+    printf("%d\n", btod(dec, org));
+  else
+    printf("%d\n", btod(2, org));
+
   return 0;
 }
